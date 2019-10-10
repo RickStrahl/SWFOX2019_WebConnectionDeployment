@@ -298,7 +298,7 @@ c:\webconnectionprojects\publishing
 
 This should match the structure of your local files.
 
-### Create the IIS Web Site and Configure the Application Pool
+### Create the IIS Web Site
 This is the only manual configuration step - we need a Web site which can be configured for Web Connection.
 
 So create a new Web Site. Open the IIS Manager:
@@ -309,28 +309,33 @@ Then create the Site by pointing it at the `web` folder of the Publishing projec
 
 ![](CreateSiteDialog.png)
 
-In addition I'll also need to set a hostname binding for the DNS name which is `publishing.west-wind.com`. I've already set the DNS hostname at my provider which is **DnSimple** associating the servers IP address with a DNS A record in the DNS records for the `west-wind.com` site. 
+Note that I have to set a hostname for host header binding so that multiple sites can share port 80 on the server. I'm going to set up `publishing.west-wind.com` with my DNS provider at [DnSimple](https://dnsimple.com/), mapping the Vultr IP address to an A DNS record.  This is necessary so the site can be accessed remotely on a shared port 80 with a custom domain name.
 
-![](HostNameBinding.png)
+If you do this after initial creation you'll need to jump into the IIS Site's Bindings.
 
-This is necessary so the site can be accessed remotely on a shared port 80 with a custom domain name.
+### Application Pool Configuration
+IIS Web sites run inside of an Application Pool and that application Pool needs to be configured. While Web Connection can create a new application pool for a new virtual, for root Web sites, **the site has to be created first** and an Application Pool has to be associated with it. 
 
-We'll also need to configure the Application Pool. The Application Pool is the IIS host process for the application and it determines the environment in which the Web Connection server runs. The most important bits here are the user account it runs under.
+This means for a new Web site, we have to manually configure the Application Pool.The Application Pool is the IIS host process for the application and it determines the environment in which the Web Connection server runs. 
 
-Go to Application Pools and open the `publishing.west-wind.com` Pool:
+The only setting that really needs to be set is the **Identity** - or the user account - that the Application Pool runs under. By default this will be set to *ApplicationPool Identity* and you definitely **do not want to run with this account** as it has no rights to access the file system or anything else on the machine. It's also difficult to set permissions on resources for this account because it doesn't show up on the permissions UI.
+
+So to fix this, go to Application Pools and open the `publishing.west-wind.com` Pool:
 
 ![](ApplicationPoolSettings.png)
 
-The most important item is the `Identity` - by  default this is set `ApplicationPool Identity` which is **very low rights** account that has no local access rights and can't be easily configured using the Windows user dialogs. For Web Connection applications this default account doesn't work because Web Connection requires file access in the startup folder (especially for file based operation) as well as rights to execute COM server, none of which ApplicationPool User has.
+Find  `Identity` - by  default this is set `ApplicationPool Identity` and change it to another account. LocalSystem, NetworkService, or a specific user account work here, but make sure that that account has sufficient rights in the folders.
 
-So - change the user to an account that has the required rights. I suggest to start, run with LOCALSYSTEM as it has full permissions. Make sure you get your app running first, and once it's up and running and working, you can dial back the security with a specific account that you give the exact rights required to run the application.
+I recommend starting with LocalSystem to start, as it has full permissions on the local machine. Make sure you get your app running first, and once it's up and running and working, you can dial back the security with a specific account that you give the exact rights required to run the application.
 
-Note we'll need the Site ID of this site in order for Web Connection to be able to configure this site. Go the site list and note the site ID of the new site:
+In addition, I also recommend setting the **Enable 32-bit Applications**, which runs your Application Pool in 32 bit mode. Although 64 bit will work running Web Connection in 64 bit mode has no benefits at all and requires extra overhead in the COM calls made when running in COM mode. Additionally, 32 bit generally has lower memory requirements.
 
 ### Configuring the Web Connection Web Site
 Now that the site is up and configured, we still need to configure Web Connection so it's connected to this new Web Site.
 
-To do this we can use the Configuration Feature in Web Connection which allows you to do a server config by running your EXE with a `CONFIG` parameter. But before you do that we need to apply the Site ID from above to the configuration settings which are stored in the app ini file - in `publishing.ini`:
+To do this we can use the Configuration Feature in Web Connection. When you create a Web Connection server it has a built in Configuration script that can self configure itself for IIS by running the application with a `CONFIG` parameter from the Command Prompt. 
+
+But before you do that we need to apply the Site ID from above to the configuration settings which are stored in the app ini file - in `publishing.ini`:
 
 ```ini
 [ServerConfig]
@@ -339,32 +344,44 @@ ScriptMaps=wc,wcs,md,pb
 IISPath=IIS://localhost/w3svc/2/root
 ```
 
-Note that I applied the SiteID in the IIS path before the `/root`. This basically set create a new virtual at the root (Virtual empty) at the IIS path specified on site 2 and create scriptmaps for wc, wcs,md and pb.
+Note that I applied the SiteId of `2` in the `IISPath` before the `/root`. This ID is important and you can get it from the IIS Site list:
 
-With the configuration set we can now run the config and hook up our Web Connection server settings to IIS.
+![](IISSiteListAndId.png)
+
+The ID ensures that our configuration run configures the correct Web Site.
+
+Note I'm going to create a new Web site with the app running at the root of the site, so the `Virtual` is empty, meaning the site root is configured. The `ScriptMaps` let you specify each of the script map extensions to create in IIS - each of those extensions are routed to your Web Connection server. This should have been set up in the project originally and you likely don't have to change it, but if you need to you can add additional extensions here.
+
+With the configuration set we can now run the `CONFIG` commmand and hook up our Web Connection server settings to IIS.
 
 ```ps
-Publishing.exe CONFIG
+.\Publishing.exe CONFIG
 ```
 
 This should take 20-30 seconds or so to run as the configuration creates the virtual, configures the Application Pool, creates the scriptmaps and sets file permissions.
 
 Once that's done you should now have a functioning Web Connection server and Web site.
 
-### Testing
-I recommend you start in file mode, so perhaps double check your `web.config` file and make sure that:
+> This configuration script can be run multiple times on a server - it won't hurt anything and will simply rewrite the settings each time it runs. It's great if you need to move an application to a new location. Simply move and re-run the CONFIG script and you're ready to go again.
+
+### Testing the Site
+At this point your Application should be ready to rock n' roll!
+
+I recommend you start in file mode, so perhaps double check your `web\web.config` file and make sure that:
 
 ```xml
 <add key="MessagingMechanism" value="File" />
 ```
 
-The go to the `deploy` folder and launch your main EXE -  `Publishing.exe` in this case. This starts the file based Web Server.
+Then go to the `deploy` folder and launch your main EXE -  `Publishing.exe` in this case. This starts the file based Web Server.
 
 Now navigate to your DNS location on the local machine - or any browser:
 
 http://publishing.west-wind.com
 
-Assuming DNS has resolved you should be able to get to the Default page now. Click on the two sample links and you should see our custom headers in the application.
+Assuming DNS has resolved you should be able to get to the Default page now. If this is setup for the Default Web Site and there's only one you can also use `localhost` to navigate instead of the host name.  
+
+When the default page comes up, click on the two sample links and you should see our custom headers in the application.
 
 ![](WeAreLive.png)
 
