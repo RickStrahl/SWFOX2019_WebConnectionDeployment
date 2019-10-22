@@ -5,6 +5,8 @@
 [White Paper](https://github.com/RickStrahl/SWFOX2019_WebConnectionDeployment/blob/master/Markdown/Strahl_WebConnectionDeploymentAndConfiguration.md)  
 [Slides](https://github.com/RickStrahl/SWFOX2019_WebConnectionDeployment/raw/master/Strahl_Strahl_WebConnectionDeploymentAndConfiguration.pptx)
 
+[Session Notes (summary)](Deployment-Notes.md)
+
 Traditionally Web Connection has not been easy to install on a live server due to the variety of components that need to be installed and moved to a running server. In recent versions Web Connection has introduced a number of tools and features that make it much easier to package and publish files to a server and automate much of the configuration process.
 
 In this session I'll demonstrate these new features by creating a small sample application and then publishing it onto a new, clean virtual machine server from scratch. I'll show how to test your application locally and get it ready for deployment, use the new tooling to package up files, copy files to the server, and then use the new built-in configuration tools to configure the server and run it. Finally I'll also show how to make changes and update the running application on a live server.
