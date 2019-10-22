@@ -8,7 +8,8 @@
 
 So, you've built your shiny new Web Connection Application on your local machine for development and you're proud of what you've accomplished. Now it's time to take that local masterpiece and get it online. How you do this?
 
-In this article I'll take you to the process of creating a small placehold application and deploy it to a live server on a hosted service called [Vultr](https://www.vultr.com/?ref=6820014) which provides low cost, and high performance virtual machine services that are ideal of hosting a Web Connection site.
+In this article I'll take you to the process of creating a small placeholder application and deploy it to a live server on a hosted service called [Vultr](https://www.vultr.com/?ref=6820014) which provides low cost, and high performance virtual machine services that are ideal of hosting a Web Connection site.
+
 
 Here's what we'll cover:
 
@@ -66,12 +67,15 @@ We have a running application.
 ### Making a couple of small Changes
 Just so we can see something a little custom, lets change the two sample links. To show off some of the new features in Web Connection 7.0 lets highlight site editing and Live Reload functionality. 
 
-If you have [Visual Studio Code](https://code.visualstudio.com/) installed you can click on the **Edit button** and open your new site in VS Code. Code is a great light weight cross platform text editor with support for tons of languages [including FoxPro](https://marketplace.visualstudio.com/items?itemName=NewDataSystems.foxpro). The editor command is configurable in `Publishing.ini` and it defaults to open VS Code in the project root, which displays both the `Deploy` and `Web folders`
+If you have [Visual Studio Code](https://code.visualstudio.com/) installed you can click on the **Edit button** and open your new site in VS Code. Code is a great light weight cross platform text editor with support for tons of languages [including FoxPro](https://marketplace.visualstudio.com/items?itemName=NewDataSystems.foxpro). **The editor command is configurable in `Publishing.ini`** and it defaults to open VS Code in the project root, which gives access to both the `Deploy` and `Web folders`
 
 ![](EnableLiveReload.png)
 
-* **Deploy** - Holds all your FoxPro Source code and 'server' resources
-* **Web** - Holds all your Web files (templates, html, css, js etc.)
+* **Deploy**  
+Holds all your FoxPro Source code and 'server' resources and your project's configuration file (ie. `YourProject.ini`).
+
+* **Web**  
+Holds all your Web files (templates, html, css, js etc.) as well as `web.config` which configures the Web Connection Web settings for IIS and Web Connection
 
 #### Enabling Live Reload
 A new feature in Web Conection 7.0 is live reload which lets open your Web page, and when you make a change to any Web files, or source code (outside of FoxPro's editor say from VS Code), the code is updated and the browser auto-refreshes. So, when you make a change you see that change immediately reflected in the browser.
@@ -498,21 +502,10 @@ Alright - there you have it. An end to end installation of a new Web Server Virt
 * Installing an SSL Certificate
 * Updating your Application
 
+
 ## Resources
 * [Session Materials](https://github.com/RickStrahl/SWFOX2019_WebConnectionDeployment)
 * [Vultr deal: $50 credit](https://www.vultr.com/?ref=7800880-4F)
 * [Win-Acme LetsEncrypt SSL Installation](https://pkisharp.github.io/win-acme/)
-
-
-
-
-
-
-
-
-
-
-
-
 
 
