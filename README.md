@@ -18,8 +18,9 @@ You will learn:
 * How to build and test Web Connection locally
 * How to prepare for publishing an application
 * How to get files moved to a server initially and subsequently
-* How install IIS quickly on the server
+* How automate IIS Installation quickly on the server
 * How install and configure your application quickly on the server
+* How to install an SSL Certificate for free
 * How to manage and update your application on the server
 
 > Prerequisites: Some familiarity with Web Connection is recommended as we talk about Web Connection applications, but the concepts and features are easily accessible without any other pre-requisites
